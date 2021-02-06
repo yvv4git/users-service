@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+option go_package = ".;rpc";
+option php_generic_services = true;
+
+package rpc;
+
+service users {
+    rpc Create(CreateRequest) returns (CreateResponse);
+    rpc Read(ReadRequest) returns (ReadResponse);
+    rpc Update(UpdateRequest) returns (UpdateResponse);
+    rpc Del(DelRequest) returns (DelResponse);
+}
+
+message CreateRequest {
+    string name = 1;
+    string email = 2;
+    int32 age = 3;
+}
+
+message CreateResponse {
+    bool result = 1;
+}
+
+message ReadRequest {
+    int64 id = 1;
+    string name = 2;
+    string email = 3;
+    int32 age = 4; 
+}
+
+message ReadResponse {
+    int64 id = 1;
+    string name = 2;
+    string email = 3;
+    int32 age = 4;
+}
+
+message UpdateRequest {
+    int64 id = 1;
+    string name = 2;
+    string email = 3;
+    int32 age = 4;
+}
+
+message UpdateResponse {
+    bool status = 1;
+}
+
+message DelRequest {
+    int64 id = 1;
+}
+
+message DelResponse {
+    bool status = 1;
+}
