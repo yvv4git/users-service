@@ -4,7 +4,7 @@
 // 	protoc        v3.6.1
 // source: users.proto
 
-package rpc
+package api
 
 import (
 	context "context"
