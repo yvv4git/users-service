@@ -769,7 +769,6 @@ func (c *usersClient) Del(ctx context.Context, in *DelRequest, opts ...grpc.Call
 	return out, nil
 }
 
-//go:generate mockery --name=UsersServer
 // UsersServer is the server API for Users service.
 type UsersServer interface {
 	Create(context.Context, *CreateRequest) (*CreateResponse, error)
