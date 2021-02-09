@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/yvv4git/users-service/domain"
+	"github.com/yvv4git/users-service/internal/repository"
 )
 
 // UsersRepository is used as repository for users entity.
@@ -45,12 +46,38 @@ func (r *UsersRepository) Read(id int64) (result *domain.Users, err error) {
 	return &user, err
 }
 
-// Update ...
+// Update is used for update user in data storage by id.
 func (r *UsersRepository) Update(user domain.Users) (err error) {
+	result, err := r.db.Exec(
+		"UPDATE users SET name = ? email = ? age = ? WHERE id = ?",
+		user.Name,
+		user.Email,
+		user.Age,
+		user.ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	cnt, err := result.RowsAffected()
+	if cnt <= 0 {
+		return repository.ErrUserNotFound
+	}
+
 	return err
 }
 
-// Del ...
+// Del is used for delete user from data storage by id.
 func (r *UsersRepository) Del(id int64) (err error) {
+	result, err := r.db.Exec("DELETE FROM users WHERE id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	cnt, err := result.RowsAffected()
+	if cnt <= 0 {
+		return repository.ErrUserNotFound
+	}
+
 	return err
 }

@@ -144,7 +144,6 @@ func TestUsers_Read(t *testing.T) {
 
 			user, err := tc.repo.Read(tc.user.ID)
 			if tc.wantError {
-				t.Log(err)
 				assert.NotEmpty(t, err.Error(), "User not found")
 			} else {
 				assert.Nil(t, err)
@@ -162,9 +161,144 @@ func TestUsers_Read(t *testing.T) {
 }
 
 func TestUsers_Update(t *testing.T) {
-	t.Log("Users - Update")
+	updateQuery := `UPDATE users SET name = \? email = \? age = \? WHERE id = \?`
+
+	// Create mock and mock-db.
+	db, mock, err := sqlmock.New()
+	assert.Nil(t, err)
+	defer db.Close()
+
+	// Init UsersRepository with mock-db.
+	repo := NewUsersRepository(db)
+
+	// Init test cases.
+	tests := []struct {
+		name      string
+		repo      repository.UsersRepository
+		user      domain.Users
+		mock      func(mock sqlmock.Sqlmock)
+		want      int
+		wantError bool
+	}{
+		{
+			name: "Update user by id",
+			repo: repo,
+			user: domain.Users{
+				ID:    1,
+				Name:  "Vladimir Eliseev",
+				Email: "yvv4test@gmail.com",
+				Age:   32,
+			},
+			mock: func(mock sqlmock.Sqlmock) {
+				// Expect update query.
+				mock.ExpectExec(updateQuery).
+					WithArgs("Vladimir Eliseev", "yvv4test@gmail.com", 32, 1).
+					WillReturnResult(sqlmock.NewResult(1, 1)) // LastInsert, RowsAffected
+			},
+			wantError: false,
+		},
+		{
+			name: "Update the user when it doesn't exist",
+			repo: repo,
+			user: domain.Users{
+				ID:    0,
+				Name:  "Vladimir Eliseev",
+				Email: "yvv4test@gmail.com",
+				Age:   32,
+			},
+			mock: func(mock sqlmock.Sqlmock) {
+				mock.ExpectExec(updateQuery).
+					WithArgs("Vladimir Eliseev", "yvv4test@gmail.com", 32, 0).
+					WillReturnError(repository.ErrUserNotFound)
+			},
+			wantError: true,
+		},
+	}
+
+	// Use test cases.
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			//t.Parallel()
+
+			tc.mock(mock)
+
+			err := tc.repo.Update(tc.user)
+			if tc.wantError {
+				assert.NotEmpty(t, err.Error(), "User not found")
+			} else {
+				assert.Nil(t, err)
+			}
+		})
+	}
+
+	// Wait close connection.
+	mock.ExpectClose()
+	err = db.Close()
+	assert.Nil(t, err)
 }
 
 func TestUsers_Del(t *testing.T) {
-	t.Log("Users - Del")
+	deleteQuery := `DELETE FROM users WHERE id = \?`
+
+	// Create mock and mock-db.
+	db, mock, err := sqlmock.New()
+	assert.Nil(t, err)
+	defer db.Close()
+
+	// Init UsersRepository with mock-db.
+	repo := NewUsersRepository(db)
+
+	// Init test cases.
+	tests := []struct {
+		name      string
+		repo      repository.UsersRepository
+		user      domain.Users
+		mock      func(mock sqlmock.Sqlmock)
+		want      int
+		wantError bool
+	}{
+		{
+			name: "Delete user by id",
+			repo: repo,
+			user: domain.Users{ID: 1},
+			mock: func(mock sqlmock.Sqlmock) {
+				mock.ExpectExec(deleteQuery).
+					WithArgs(1).
+					WillReturnResult(sqlmock.NewResult(1, 1)) // LastInsert, RowsAffected
+			},
+			wantError: false,
+		},
+		{
+			name: "Delete user by id when it doesn't exist",
+			repo: repo,
+			user: domain.Users{ID: 0},
+			mock: func(mock sqlmock.Sqlmock) {
+				mock.ExpectExec(deleteQuery).
+					WithArgs(0).
+					WillReturnError(repository.ErrUserNotFound)
+			},
+			wantError: true,
+		},
+	}
+
+	// Use test cases.
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			//t.Parallel()
+
+			tc.mock(mock)
+
+			err := tc.repo.Del(tc.user.ID)
+			if tc.wantError {
+				assert.NotEmpty(t, err.Error(), "User not found")
+			} else {
+				assert.Nil(t, err)
+			}
+		})
+	}
+
+	// Wait close connection.
+	mock.ExpectClose()
+	err = db.Close()
+	assert.Nil(t, err)
 }
