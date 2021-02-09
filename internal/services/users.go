@@ -19,22 +19,12 @@ func NewUsersService(repo repository.UsersRepository) *UsersService {
 
 // Create is used for create user in repository.
 func (s *UsersService) Create(user domain.Users) (result *domain.Users, err error) {
-	result, err = s.repo.Create(user)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, err
+	return s.repo.Create(user)
 }
 
 // Read is used for find user in repository by id.
 func (s *UsersService) Read(id int64) (result *domain.Users, err error) {
-	result, err = s.repo.Read(id)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, err
+	return s.repo.Read(id)
 }
 
 // Update is used for update user in repository.
