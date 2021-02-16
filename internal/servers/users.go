@@ -4,12 +4,15 @@ import (
 	"context"
 
 	"github.com/yvv4git/users-service/internal/api"
+	"github.com/yvv4git/users-service/internal/services"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 // Users ...
-type Users struct{}
+type Users struct {
+	userService services.UsersService
+}
 
 // Create ...
 func (*Users) Create(context.Context, *api.CreateRequest) (*api.CreateResponse, error) {
@@ -32,6 +35,8 @@ func (*Users) Del(context.Context, *api.DelRequest) (*api.DelResponse, error) {
 }
 
 // NewUsersServer is used as constructor for users server protocol.
-func NewUsersServer() *Users {
-	return &Users{}
+func NewUsersServer(usersService services.UsersService) *Users {
+	return &Users{
+		userService: usersService,
+	}
 }

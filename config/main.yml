@@ -1,0 +1,5 @@
+DB:
+  FileNameDB: "db/example.db"
+
+Server:
+  Port: 1234

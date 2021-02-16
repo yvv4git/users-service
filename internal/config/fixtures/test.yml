@@ -1,0 +1,5 @@
+DB:
+  FileNameDB: "db/service.db"
+
+Server:
+  Port: 8080

@@ -1,57 +1,81 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"strings"
+
+	"github.com/spf13/viper"
+)
 
 const (
-	defaultFileNameDB = "db/example.db"
-	defaultOtherVal   = 5
+	defaultConfigType = "yml"
+	defaultFileNameDB = "db/default.db"
+	defaultServerPort = 1357
+	prefixEnvironmet  = "APP"
 )
 
 // Config is used as config of this app.
 type Config struct {
-	DB    DBConfig
-	Other OtherConfig
+	DB     DBConfig
+	Server ServerConfig
 }
 
 type (
 	// DBConfig is used as config struct for db.
 	DBConfig struct {
-		FileNameDB string
+		FileNameDB string `mapstructure:"FILENAMEDB"`
 	}
 
-	// OtherConfig is used for example.
-	OtherConfig struct {
-		OtherVal int
+	// ServerConfig is used for example.
+	ServerConfig struct {
+		Port int `mapstructure:"PORT"`
 	}
 )
 
-func setUpByViper() error {
-	fillDefaults()
-
-	if err := parseConfigFile(); err != nil {
-		return err
+// Init is used for create instance of config.
+func Init(filePath string) (conf *Config, err error) {
+	dir, fileName, err := parseFilePath(filePath)
+	if err != nil {
+		return nil, err
 	}
 
-	return parseDbEnvVariables()
-}
+	var runtimeViper = viper.New()
 
-func fillDefaults() {
-	viper.SetDefault("DB.FileNameDB", defaultFileNameDB)
-	viper.SetDefault("Other.OtherVal", defaultOtherVal)
-}
+	// Set default values and init settings.
+	populateDefaults(runtimeViper)
 
-func parseConfigFile() error {
-	viper.AddConfigPath("configs")
-	viper.SetConfigName("default")
-	return viper.ReadInConfig()
-}
+	// Load from file.
+	runtimeViper.AddConfigPath(dir)
+	runtimeViper.SetConfigName(fileName)
+	runtimeViper.SetConfigType(defaultConfigType)
 
-func parseDbEnvVariables() error {
-	viper.SetEnvPrefix("db")
+	// Load from evironment if exists.
+	runtimeViper.SetEnvPrefix(prefixEnvironmet)
+	runtimeViper.AutomaticEnv()
 
-	if err := viper.BindEnv("FileNameDB"); err != nil {
-		return err
+	// Fill viper map.
+	if err = runtimeViper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return
+		}
 	}
 
-	return nil
+	// Fill config from viper.
+	err = runtimeViper.Unmarshal(&conf)
+	return
+}
+
+func populateDefaults(viperRuntime *viper.Viper) {
+	viperRuntime.SetDefault("DB.FileNameDB", defaultFileNameDB)
+	viperRuntime.SetDefault("Server.Port", defaultServerPort)
+}
+
+func parseFilePath(filePath string) (dir string, fileName string, err error) {
+	path := strings.Split(filePath, "/")
+	if len(path) < 2 {
+		return "", "", ErrFileNotFound
+	}
+	dir = path[0]
+	fileName = path[1]
+
+	return
 }
