@@ -6,3 +6,6 @@ gen_mocks:
 
 tests:
 	go test -v ./...
+
+build:
+	GOOS=linux GOARCH=amd64 go build -o server.bin cmd/server/main.go
