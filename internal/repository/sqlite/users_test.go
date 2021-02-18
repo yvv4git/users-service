@@ -161,7 +161,7 @@ func TestUsers_Read(t *testing.T) {
 }
 
 func TestUsers_Update(t *testing.T) {
-	updateQuery := `UPDATE users SET name = \? email = \? age = \? WHERE id = \?`
+	updateQuery := `UPDATE users SET name = \?, email = \?, age = \? WHERE id = \?`
 
 	// Create mock and mock-db.
 	db, mock, err := sqlmock.New()

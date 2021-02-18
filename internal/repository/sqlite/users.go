@@ -49,7 +49,7 @@ func (r *UsersRepository) Read(id int64) (result *domain.Users, err error) {
 // Update is used for update user in data storage by id.
 func (r *UsersRepository) Update(user domain.Users) (err error) {
 	result, err := r.db.Exec(
-		"UPDATE users SET name = ? email = ? age = ? WHERE id = ?",
+		"UPDATE users SET name = ?, email = ?, age = ? WHERE id = ?",
 		user.Name,
 		user.Email,
 		user.Age,
