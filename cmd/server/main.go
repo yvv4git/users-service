@@ -38,9 +38,8 @@ func main() {
 	usersRepo := sqlite.NewUsersRepository(db)
 	usersService := services.NewUsersService(usersRepo)
 	usersSrv := servers.NewUsersServer(usersService)
-	log.Println(usersSrv)
 
-	// Graceful shutdown.
+	// For graceful shutdown.
 	exit := make(chan os.Signal, 1)
 	signal.Notify(exit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
@@ -66,5 +65,8 @@ func main() {
 	<-exit
 	log.Println("Stopping app...")
 	grpcServer.Stop()
-	db.Close()
+
+	if err := db.Close(); err != nil {
+		log.Println("DB closed problems")
+	}
 }
