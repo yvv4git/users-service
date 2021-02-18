@@ -16,3 +16,4 @@
 
 server.bin
 client.bin
+db/example.db
