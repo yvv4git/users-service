@@ -1,0 +1,11 @@
+development:
+    dialect: sqlite3
+    datasource: db/example.db
+    table: migrations
+    dir: migrations
+
+test:
+    dialect: sqlite3
+    datasource: db/test.db
+    table: migrations
+    dir: migrations
