@@ -18,3 +18,9 @@ migrations_up:
 
 migrations_down:
 	sql-migrate down -env="development" -dryrun
+
+docker_build:
+	docker build --no-cache --rm -m 2G -t yvv4docker/users-service -f docker/Dockerfile .
+
+docker_run:
+	docker run --rm --name users-service -p 1234:1234 yvv4docker/users-service
