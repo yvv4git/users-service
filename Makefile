@@ -9,6 +9,7 @@ tests:
 
 build:
 	GOOS=linux GOARCH=amd64 go build -o server.bin cmd/server/main.go
+	GOOS=linux GOARCH=amd64 go build -o client.bin cmd/client/main.go
 
 migrations_create:
 	sql-migrate new -env="development" create_tb_users
