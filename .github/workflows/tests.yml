@@ -18,7 +18,7 @@ jobs:
           go-version: 1.15
       
       - name: Test app
-        env:
-          APP_DB.FILENAMEDB: ${{ secrets.FILE_NAME_DB }}
-          APP_DB.FILENAMEDB: ${{ secrets.SERVER_PORT }}
+#        env:
+#          APP_DB.FILENAMEDB: ${{ secrets.FILE_NAME_DB }}
+#          APP_DB.FILENAMEDB: ${{ secrets.SERVER_PORT }}
         run: go test -v ./...
