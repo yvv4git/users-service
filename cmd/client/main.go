@@ -4,36 +4,74 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/yvv4git/users-service/internal/api"
 	"google.golang.org/grpc"
+	"gopkg.in/alecthomas/kingpin.v2"
+)
+
+var (
+	app  = kingpin.New("usersClient", "A users client on golang.")
+	host = app.Flag("host", "IP address of server.").Required().IP()
+	port = app.Flag("port", "Port of server.").Required().String()
+
+	create      = app.Command("create", "Add user to system.")
+	createName  = create.Arg("name", "User name.").Required().String()
+	createEmail = create.Arg("email", "User email.").Required().String()
+	createAge   = create.Arg("age", "User age").Required().Int32()
+
+	read      = app.Command("read", "Find user in system.")
+	readID    = read.Arg("id", "User id.").Required().Int64()
+	readName  = read.Arg("name", "User name.").String()
+	readEmail = read.Arg("email", "User email.").String()
+	readAge   = read.Arg("age", "User age").String()
+
+	update      = app.Command("update", "Update user params.")
+	updateID    = update.Arg("user_id", "User id.").Required().Int64()
+	updateName  = update.Arg("name", "User name.").String()
+	updateEmail = update.Arg("email", "User email.").String()
+	updateAge   = update.Arg("age", "User age").Int32()
+
+	delete   = app.Command("delete", "Delete user from system.")
+	deleteID = delete.Arg("id", "User id.").Required().Int64()
 )
 
 func main() {
-	fmt.Println("Client")
+	var funcCallBack func(client api.UsersClient)
 
-	// Connect to grpc server.
-	conn, err := grpc.Dial(":1234", grpc.WithInsecure())
+	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
+	case create.FullCommand():
+		funcCallBack = createUser
+	case read.FullCommand():
+		funcCallBack = readUser
+	case update.FullCommand():
+		funcCallBack = updateUser
+	case delete.FullCommand():
+		funcCallBack = delUser
+	}
+
+	serverAddress := fmt.Sprintf("%s:%s", *host, *port)
+	log.Println("Server address: ", serverAddress)
+
+	conn, err := grpc.Dial(serverAddress, grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Create client with connection.
 	client := api.NewUsersClient(conn)
-	//createUser(client)
-	//readUser(client)
-	//updateUser(client)
-	delUser(client)
+	funcCallBack(client)
 }
 
 func createUser(client api.UsersClient) {
-	// Use client method Create for example.
+	log.Println("Add command.")
+
 	res, err := client.Create(
 		context.Background(),
 		&api.CreateRequest{
-			Name:  "Vladimir",
-			Email: "yvv4recon@gmail.com",
-			Age:   32,
+			Name:  *createName,
+			Email: *createEmail,
+			Age:   *createAge,
 		},
 	)
 	if err != nil {
@@ -44,10 +82,12 @@ func createUser(client api.UsersClient) {
 }
 
 func readUser(client api.UsersClient) {
+	log.Println("Read command.")
+
 	res, err := client.Read(
 		context.Background(),
 		&api.ReadRequest{
-			Id: 1,
+			Id: *readID,
 		},
 	)
 	if err != nil {
@@ -58,13 +98,15 @@ func readUser(client api.UsersClient) {
 }
 
 func updateUser(client api.UsersClient) {
+	log.Println("Update command.")
+
 	res, err := client.Update(
 		context.Background(),
 		&api.UpdateRequest{
-			Id:    1,
-			Name:  "Superman",
-			Email: "super@gmail.ru",
-			Age:   777,
+			Id:    *updateID,
+			Name:  *updateName,
+			Email: *updateEmail,
+			Age:   *updateAge,
 		},
 	)
 	if err != nil {
@@ -75,10 +117,12 @@ func updateUser(client api.UsersClient) {
 }
 
 func delUser(client api.UsersClient) {
+	log.Println("Delete command.")
+
 	res, err := client.Del(
 		context.Background(),
 		&api.DelRequest{
-			Id: 1,
+			Id: *deleteID,
 		},
 	)
 	if err != nil {
